@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citra Satelit Alternatif - Mode Layar Penuh</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1a3d, #1f0b38, #0c1a3d);
+            color: #fff;
+            min-height: 100vh;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px 0;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(218, 27, 96, 0.2), transparent 70%);
+            pointer-events: none;
+        }
+        
+        header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at bottom left, rgba(255, 138, 0, 0.2), transparent 70%);
+            pointer-events: none;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to right, #ff8a00, #da1b60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            color: #e0e0ff;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .map-container {
+            height: 60vh;
+            min-height: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 100%;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #ffcc00;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h2 i {
+            font-size: 1.3rem;
+        }
+        
+        .layer-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .layer-btn {
+            padding: 12px 8px;
+            background: rgba(50, 50, 100, 0.7);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .layer-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .layer-btn:hover {
+            background: rgba(80, 80, 160, 0.9);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .layer-btn.active {
+            background: linear-gradient(to right, #ff8a00, #da1b60);
+            box-shadow: 0 0 15px rgba(255, 138, 0, 0.7);
+        }
+        
+        .location-search {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        #location-input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        #search-btn {
+            padding: 12px 20px;
+            background: linear-gradient(to right, #00c9ff, #92fe9d);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #search-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 201, 255, 0.4);
+        }
+        
+        .info-panel {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+        }
+        
+        .info-content {
+            line-height: 1.8;
+            color: #e0e0ff;
+        }
+        
+        .info-content p {
+            margin-bottom: 15px;
+        }
+        
+        .highlight {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: #a0a0ff;
+            font-size: 0.9rem;
+            transition: all 0.4s ease;
+        }
+        
+        .mobile-warning {
+            display: none;
+            background: rgba(255, 204, 0, 0.2);
+            border: 1px solid #ffcc00;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 15px 0;
+            text-align: center;
+            color: #ffcc00;
+        }
+        
+        /* Tombol Fullscreen */
+        #fullscreen-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        #fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+        
+        #fullscreen-btn i {
+            font-size: 1.5rem;
+        }
+        
+        /* Mode Fullscreen */
+        body:fullscreen {
+            background: #000;
+            padding: 0;
+        }
+        
+        body:fullscreen .container {
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body:fullscreen header,
+        body:fullscreen .mobile-warning,
+        body:fullscreen .controls,
+        body:fullscreen .info-panel,
+        body:fullscreen footer {
+            display: none;
+        }
+        
+        body:fullscreen .map-container {
+            flex: 1;
+            height: 100%;
+            border-radius: 0;
+            border: none;
+        }
+        
+        body:fullscreen #fullscreen-btn {
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Responsif untuk tablet */
+        @media (min-width: 768px) {
+            .control-group {
+                min-width: calc(50% - 15px);
+            }
+            
+            .layer-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* Responsif untuk desktop */
+        @media (min-width: 992px) {
+            .controls {
+                flex-wrap: nowrap;
+            }
+            
+            .control-group {
+                min-width: auto;
+            }
+            
+            .layer-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Responsif untuk handphone */
+        @media (max-width: 576px) {
+            header {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 0.95rem;
+            }
+            
+            .map-container {
+                height: 50vh;
+                min-height: 300px;
+            }
+            
+            .controls {
+                padding: 15px;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .layer-btn {
+                padding: 10px 5px;
+                font-size: 0.8rem;
+            }
+            
+            .layer-btn i {
+                font-size: 1.2rem;
+            }
+            
+            #location-input {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+            
+            #search-btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .mobile-warning {
+                display: block;
+            }
+            
+            footer {
+                font-size: 0.8rem;
+            }
+            
+            #fullscreen-btn {
+                width: 45px;
+                height: 45px;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+        
+        /* Animasi untuk elemen UI */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        header, .map-container, .controls, .info-panel {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        .controls {
+            animation-delay: 0.2s;
+        }
+        
+        .info-panel {
+            animation-delay: 0.4s;
+        }
+        
+        /* Animasi untuk tombol fullscreen */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-satellite"></i> Citra Satelit Alternatif</h1>
+            <p class="subtitle">Akses berbagai sumber citra satelit untuk melihat area yang sering diburamkan di platform komersial. Fitur layar penuh memungkinkan eksplorasi lebih leluasa.</p>
+        </header>
+        
+        <div class="mobile-warning">
+            <i class="fas fa-mobile-alt"></i> Gunakan mode layar penuh untuk pengalaman terbaik di perangkat mobile
+        </div>
+        
+        <div class="main-content">
+            <div class="map-container">
+                <div id="map"></div>
+                <button id="fullscreen-btn" class="pulse-animation" title="Mode Layar Penuh">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <h2><i class="fas fa-layer-group"></i> Pilih Sumber Citra</h2>
+                    <div class="layer-selector">
+                        <button class="layer-btn active" data-layer="esri">
+                            <i class="fas fa-globe-asia"></i>
+                            Esri World Imagery
+                        </button>
+                        <button class="layer-btn" data-layer="openTopo">
+                            <i class="fas fa-mountain"></i>
+                            OpenTopoMap
+                        </button>
+                        <button class="layer-btn" data-layer="osm">
+                            <i class="fas fa-map"></i>
+                            OpenStreetMap
+                        </button>
+                        <button class="layer-btn" data-layer="stadia">
+                            <i class="fas fa-map-marked-alt"></i>
+                            Stadia Alidade
+                        </button>
+                        <button class="layer-btn" data-layer="carto">
+                            <i class="fas fa-ship"></i>
+                            CartoDB Voyager
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <h2><i class="fas fa-search-location"></i> Cari Lokasi</h2>
+                    <div class="location-search">
+                        <input type="text" id="location-input" placeholder="Cari lokasi (contoh: Pulau Gag, Papua Barat)">
+                        <button id="search-btn"><i class="fas fa-search"></i> Cari</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <div class="info-content">
+                    <h2><i class="fas fa-expand-arrows-alt"></i> Fitur Layar Penuh</h2>
+                    <p>Klik tombol <span class="highlight"><i class="fas fa-expand"></i> Layar Penuh</span> di pojok kanan bawah peta untuk:</p>
+                    <p>• Menampilkan peta di seluruh layar perangkat Anda</p>
+                    <p>• Menghilangkan elemen lain untuk fokus pada eksplorasi peta</p>
+                    <p>• Pengalaman yang lebih leluasa terutama di perangkat mobile</p>
+                    <p>Untuk keluar dari mode layar penuh, tekan tombol <span class="highlight">Esc</span> atau ketuk tombol layar penuh lagi.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Website Peta Citra Alternatif &copy; 2023 | Fitur Layar Penuh untuk Eksplorasi Lebih Leluasa</p>
+            <p>Optimized for Mobile Devices</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Inisialisasi peta dengan fokus pada Indonesia
+        const map = L.map('map').setView([-2.5489, 118.0149], 5);
+        
+        // Layer yang tersedia
+        const layerOptions = {
+            esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
+                maxZoom: 19
+            }),
+            openTopo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data: &copy; OpenTopoMap',
+                maxZoom: 17
+            }),
+            osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }),
+            stadia: L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; Stadia Maps',
+                maxZoom: 20
+            }),
+            carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; CARTO',
+                maxZoom: 20
+            })
+        };
+        
+        // Tambahkan layer default
+        layerOptions.esri.addTo(map);
+        
+        // Kontrol layer
+        const layerButtons = document.querySelectorAll('.layer-btn');
+        layerButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Hapus kelas active dari semua tombol
+                layerButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Tambahkan kelas active ke tombol yang diklik
+                this.classList.add('active');
+                
+                // Dapatkan jenis layer dari atribut data
+                const selectedLayer = this.getAttribute('data-layer');
+                
+                // Hapus semua layer yang ada
+                Object.values(layerOptions).forEach(layer => {
+                    if (map.hasLayer(layer)) {
+                        map.removeLayer(layer);
+                    }
+                });
+                
+                // Tambahkan layer yang dipilih
+                layerOptions[selectedLayer].addTo(map);
+            });
+        });
+        
+        // Fungsi pencarian lokasi
+        document.getElementById('search-btn').addEventListener('click', searchLocation);
+        document.getElementById('location-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchLocation();
+            }
+        });
+        
+        // Marker untuk lokasi saat ini
+        let currentMarker = null;
+        
+        function searchLocation() {
+            const locationInput = document.getElementById('location-input').value.trim();
+            
+            if (!locationInput) {
+                alert('Silakan masukkan nama lokasi');
+                return;
+            }
+            
+            // Tampilkan loading
+            const searchBtn = document.getElementById('search-btn');
+            const originalText = searchBtn.innerHTML;
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari...';
+            searchBtn.disabled = true;
+            
+            // Gunakan Nominatim untuk geocoding
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationInput)}&countrycodes=id&limit=1`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        
+                        // Hapus marker sebelumnya jika ada
+                        if (currentMarker) {
+                            map.removeLayer(currentMarker);
+                        }
+                        
+                        // Buat marker baru
+                        currentMarker = L.marker([lat, lon]).addTo(map)
+                            .bindPopup(`<b>${locationInput}</b><br>Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`)
+                            .openPopup();
+                        
+                        // Pindahkan view ke lokasi
+                        map.setView([lat, lon], 14);
+                    } else {
+                        alert('Lokasi tidak ditemukan. Silakan coba nama yang lebih spesifik.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat mencari lokasi. Pastikan Anda terhubung ke internet.');
+                })
+                .finally(() => {
+                    // Kembalikan tombol ke keadaan semula
+                    searchBtn.innerHTML = originalText;
+                    searchBtn.disabled = false;
+                });
+        }
+        
+        // Tambahkan kontrol skala
+        L.control.scale({imperial: false}).addTo(map);
+        
+        // Tambahkan info lokasi saat diklik
+        map.on('click', function(e) {
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+            
+            currentMarker = L.marker(e.latlng).addTo(map)
+                .bindPopup(`<b>Lokasi Dipilih</b><br>Lat: ${e.latlng.lat.toFixed(4)}<br>Lon: ${e.latlng.lng.toFixed(4)}`)
+                .openPopup();
+        });
+        
+        // Tambahkan koordinat di pojok kanan bawah
+        const coordsContainer = L.control({position: 'bottomright'});
+        
+        coordsContainer.onAdd = function(map) {
+            this._div = L.DomUtil.create('div', 'coords-display');
+            this._div.style.backgroundColor = 'rgba(0,0,0,0.7)';
+            this._div.style.color = 'white';
+            this._div.style.padding = '8px 12px';
+            this._div.style.borderRadius = '5px';
+            this._div.style.fontSize = '14px';
+            this._div.style.fontFamily = 'monospace';
+            this.update();
+            return this._div;
+        };
+        
+        coordsContainer.update = function(e) {
+            if (e) {
+                this._div.innerHTML = `Lat: ${e.latlng.lat.toFixed(4)}<br>Lon: ${e.latlng.lng.toFixed(4)}`;
+            } else {
+                const center = map.getCenter();
+                this._div.innerHTML = `Lat: ${center.lat.toFixed(4)}<br>Lon: ${center.lng.toFixed(4)}`;
+            }
+        };
+        
+        map.addControl(coordsContainer);
+        map.on('mousemove', coordsContainer.update.bind(coordsContainer));
+        
+        // Optimasi untuk mobile: mencegah scroll halaman saat berinteraksi dengan peta
+        map.on('touchstart', function(e) {
+            if (e.originalEvent.touches.length > 1) {
+                e.originalEvent.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Fitur Layar Penuh
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        
+        fullscreenBtn.addEventListener('click', function() {
+            toggleFullscreen();
+        });
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                // Masuk ke mode layar penuh
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+                
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                fullscreenBtn.title = "Keluar dari Layar Penuh";
+                fullscreenBtn.classList.remove('pulse-animation');
+                
+                // Perbarui ukuran peta setelah fullscreen
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 300);
+            } else {
+                // Keluar dari mode layar penuh
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                fullscreenBtn.title = "Mode Layar Penuh";
+                fullscreenBtn.classList.add('pulse-animation');
+            }
+        }
+        
+        // Tangani perubahan mode layar penuh
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        
+        function handleFullscreenChange() {
+            if (!document.fullscreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.mozFullScreenElement &&
+                !document.msFullscreenElement) {
+                // Keluar dari fullscreen
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                fullscreenBtn.title = "Mode Layar Penuh";
+                fullscreenBtn.classList.add('pulse-animation');
+                
+                // Perbarui ukuran peta
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 300);
+            }
+        }
+        
+        // Tambahkan tombol fullscreen ke Leaflet controls
+        L.Control.Fullscreen = L.Control.extend({
+            onAdd: function(map) {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                container.style.background = 'none';
+                container.style.border = 'none';
+                
+                const button = L.DomUtil.create('a', 'leaflet-control-fullscreen', container);
+                button.href = '#';
+                button.title = 'Mode Layar Penuh';
+                button.innerHTML = '<i class="fas fa-expand"></i>';
+                
+                L.DomEvent.on(button, 'click', L.DomEvent.stop)
+                    .on(button, 'click', toggleFullscreen);
+                
+                return container;
+            }
+        });
+        
+        L.control.fullscreen = function(opts) {
+            return new L.Control.Fullscreen(opts);
+        };
+        
+        // Tambahkan kontrol ke peta
+        L.control.fullscreen({ position: 'topright' }).addTo(map);
+    </script>
+</body>
+</html>
