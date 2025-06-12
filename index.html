@@ -257,8 +257,8 @@
             color: #ffcc00;
         }
         
-        /* Tombol Fullscreen */
-        #fullscreen-btn {
+        /* Tombol Fullscreen untuk Peta */
+        #map-fullscreen-btn {
             position: absolute;
             bottom: 20px;
             right: 20px;
@@ -277,47 +277,39 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
         
-        #fullscreen-btn:hover {
+        #map-fullscreen-btn:hover {
             background: rgba(0, 0, 0, 0.9);
             transform: scale(1.1);
         }
         
-        #fullscreen-btn i {
+        #map-fullscreen-btn i {
             font-size: 1.5rem;
         }
         
-        /* Mode Fullscreen */
-        body:fullscreen {
-            background: #000;
-            padding: 0;
+        /* Mode Fullscreen untuk Peta */
+        .map-container.fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            border-radius: 0 !important;
+            border: none !important;
         }
         
-        body:fullscreen .container {
-            max-width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+        .map-container.fullscreen #map {
+            height: 100% !important;
         }
         
-        body:fullscreen header,
-        body:fullscreen .mobile-warning,
-        body:fullscreen .controls,
-        body:fullscreen .info-panel,
-        body:fullscreen footer {
-            display: none;
-        }
-        
-        body:fullscreen .map-container {
-            flex: 1;
-            height: 100%;
-            border-radius: 0;
-            border: none;
-        }
-        
-        body:fullscreen #fullscreen-btn {
+        .map-container.fullscreen #map-fullscreen-btn {
             bottom: 30px;
             right: 30px;
             background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .map-container.fullscreen #map-fullscreen-btn i {
+            transform: rotate(180deg);
         }
         
         /* Responsif untuk tablet */
@@ -400,7 +392,7 @@
                 font-size: 0.8rem;
             }
             
-            #fullscreen-btn {
+            #map-fullscreen-btn {
                 width: 45px;
                 height: 45px;
                 bottom: 15px;
@@ -436,13 +428,68 @@
         .pulse-animation {
             animation: pulse 2s infinite;
         }
+        
+        /* Overlay untuk mode fullscreen */
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9998;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .fullscreen-overlay.active {
+            display: flex;
+        }
+        
+        .fullscreen-overlay h3 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffcc00;
+        }
+        
+        .fullscreen-overlay p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .exit-fullscreen-btn {
+            padding: 12px 30px;
+            background: linear-gradient(to right, #da1b60, #ff8a00);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .exit-fullscreen-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(218, 27, 96, 0.5);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1><i class="fas fa-satellite"></i> Citra Satelit Alternatif</h1>
-            <p class="subtitle">Akses berbagai sumber citra satelit untuk melihat area yang sering diburamkan di platform komersial. Fitur layar penuh memungkinkan eksplorasi lebih leluasa.</p>
+            <p class="subtitle">Akses berbagai sumber citra satelit untuk melihat area yang sering diburamkan di platform komersial. Fitur layar penuh khusus peta memungkinkan eksplorasi lebih leluasa.</p>
         </header>
         
         <div class="mobile-warning">
@@ -450,9 +497,9 @@
         </div>
         
         <div class="main-content">
-            <div class="map-container">
+            <div class="map-container" id="map-container">
                 <div id="map"></div>
-                <button id="fullscreen-btn" class="pulse-animation" title="Mode Layar Penuh">
+                <button id="map-fullscreen-btn" class="pulse-animation" title="Mode Layar Penuh">
                     <i class="fas fa-expand"></i>
                 </button>
             </div>
@@ -497,10 +544,10 @@
             
             <div class="info-panel">
                 <div class="info-content">
-                    <h2><i class="fas fa-expand-arrows-alt"></i> Fitur Layar Penuh</h2>
+                    <h2><i class="fas fa-expand-arrows-alt"></i> Fitur Layar Penuh Khusus Peta</h2>
                     <p>Klik tombol <span class="highlight"><i class="fas fa-expand"></i> Layar Penuh</span> di pojok kanan bawah peta untuk:</p>
-                    <p>• Menampilkan peta di seluruh layar perangkat Anda</p>
-                    <p>• Menghilangkan elemen lain untuk fokus pada eksplorasi peta</p>
+                    <p>• Menampilkan area peta di seluruh layar perangkat Anda</p>
+                    <p>• Fokus penuh pada eksplorasi citra satelit</p>
                     <p>• Pengalaman yang lebih leluasa terutama di perangkat mobile</p>
                     <p>Untuk keluar dari mode layar penuh, tekan tombol <span class="highlight">Esc</span> atau ketuk tombol layar penuh lagi.</p>
                 </div>
@@ -511,6 +558,15 @@
             <p>Website Peta Citra Alternatif &copy; 2023 | Fitur Layar Penuh untuk Eksplorasi Lebih Leluasa</p>
             <p>Optimized for Mobile Devices</p>
         </footer>
+    </div>
+    
+    <div class="fullscreen-overlay" id="fullscreen-overlay">
+        <h3><i class="fas fa-expand"></i> Mode Layar Penuh Peta</h3>
+        <p>Anda sedang dalam mode layar penuh khusus untuk peta. Gunakan area penuh untuk eksplorasi citra satelit dengan leluasa.</p>
+        <p>Tekan tombol di bawah atau tombol Esc untuk kembali ke tampilan normal.</p>
+        <button class="exit-fullscreen-btn" id="exit-fullscreen-btn">
+            <i class="fas fa-compress"></i> Keluar dari Layar Penuh
+        </button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -680,67 +736,44 @@
             }
         }, { passive: false });
         
-        // Fitur Layar Penuh
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        // Fitur Layar Penuh untuk Peta
+        const mapContainer = document.getElementById('map-container');
+        const fullscreenBtn = document.getElementById('map-fullscreen-btn');
+        const fullscreenOverlay = document.getElementById('fullscreen-overlay');
+        const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
+        
+        let isFullscreen = false;
         
         fullscreenBtn.addEventListener('click', function() {
-            toggleFullscreen();
+            toggleMapFullscreen();
         });
         
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
+        exitFullscreenBtn.addEventListener('click', function() {
+            toggleMapFullscreen();
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isFullscreen) {
+                toggleMapFullscreen();
+            }
+        });
+        
+        function toggleMapFullscreen() {
+            if (!isFullscreen) {
                 // Masuk ke mode layar penuh
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) {
-                    document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    document.documentElement.msRequestFullscreen();
-                }
+                mapContainer.classList.add('fullscreen');
+                fullscreenOverlay.classList.add('active');
+                isFullscreen = true;
                 
-                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-                fullscreenBtn.title = "Keluar dari Layar Penuh";
-                fullscreenBtn.classList.remove('pulse-animation');
-                
-                // Perbarui ukuran peta setelah fullscreen
+                // Perbarui ukuran peta
                 setTimeout(() => {
                     map.invalidateSize();
                 }, 300);
             } else {
                 // Keluar dari mode layar penuh
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                
-                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                fullscreenBtn.title = "Mode Layar Penuh";
-                fullscreenBtn.classList.add('pulse-animation');
-            }
-        }
-        
-        // Tangani perubahan mode layar penuh
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-        
-        function handleFullscreenChange() {
-            if (!document.fullscreenElement && 
-                !document.webkitFullscreenElement && 
-                !document.mozFullScreenElement &&
-                !document.msFullscreenElement) {
-                // Keluar dari fullscreen
-                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                fullscreenBtn.title = "Mode Layar Penuh";
-                fullscreenBtn.classList.add('pulse-animation');
+                mapContainer.classList.remove('fullscreen');
+                fullscreenOverlay.classList.remove('active');
+                isFullscreen = false;
                 
                 // Perbarui ukuran peta
                 setTimeout(() => {
@@ -762,7 +795,7 @@
                 button.innerHTML = '<i class="fas fa-expand"></i>';
                 
                 L.DomEvent.on(button, 'click', L.DomEvent.stop)
-                    .on(button, 'click', toggleFullscreen);
+                    .on(button, 'click', toggleMapFullscreen);
                 
                 return container;
             }
@@ -774,6 +807,11 @@
         
         // Tambahkan kontrol ke peta
         L.control.fullscreen({ position: 'topright' }).addTo(map);
+        
+        // Inisialisasi marker untuk Pulau Gag
+        const pulauGag = L.marker([-0.5417, 130.0142]).addTo(map)
+            .bindPopup('<b>Pulau Gag, Raja Ampat</b><br>Contoh lokasi dengan citra satelit alternatif')
+            .openPopup();
     </script>
 </body>
 </html>
