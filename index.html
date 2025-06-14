@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citra Satelit Alternatif - Mode Layar Penuh</title>
+    <title>Citra Satelit Alternatif - Pulau Gag</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -312,6 +312,28 @@
             transform: rotate(180deg);
         }
         
+        /* Posisi marker khusus untuk Pulau Gag */
+        .gag-marker {
+            background-color: #ff3366;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.7);
+        }
+        
+        .gag-marker::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
         /* Responsif untuk tablet */
         @media (min-width: 768px) {
             .control-group {
@@ -418,17 +440,6 @@
             animation-delay: 0.4s;
         }
         
-        /* Animasi untuk tombol fullscreen */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-        
         /* Overlay untuk mode fullscreen */
         .fullscreen-overlay {
             position: fixed;
@@ -488,8 +499,8 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-satellite"></i> Citra Satelit Alternatif</h1>
-            <p class="subtitle">Akses berbagai sumber citra satelit untuk melihat area yang sering diburamkan di platform komersial. Fitur layar penuh khusus peta memungkinkan eksplorasi lebih leluasa.</p>
+            <h1><i class="fas fa-satellite"></i> Citra Satelit Pulau Gag</h1>
+            <p class="subtitle">Lihat citra satelit Pulau Gag yang sering diburamkan di platform komersial. Fitur layar penuh khusus peta memungkinkan eksplorasi lebih leluasa.</p>
         </header>
         
         <div class="mobile-warning">
@@ -499,7 +510,7 @@
         <div class="main-content">
             <div class="map-container" id="map-container">
                 <div id="map"></div>
-                <button id="map-fullscreen-btn" class="pulse-animation" title="Mode Layar Penuh">
+                <button id="map-fullscreen-btn" title="Mode Layar Penuh">
                     <i class="fas fa-expand"></i>
                 </button>
             </div>
@@ -544,25 +555,24 @@
             
             <div class="info-panel">
                 <div class="info-content">
-                    <h2><i class="fas fa-expand-arrows-alt"></i> Fitur Layar Penuh Khusus Peta</h2>
-                    <p>Klik tombol <span class="highlight"><i class="fas fa-expand"></i> Layar Penuh</span> di pojok kanan bawah peta untuk:</p>
-                    <p>• Menampilkan area peta di seluruh layar perangkat Anda</p>
-                    <p>• Fokus penuh pada eksplorasi citra satelit</p>
-                    <p>• Pengalaman yang lebih leluasa terutama di perangkat mobile</p>
-                    <p>Untuk keluar dari mode layar penuh, tekan tombol <span class="highlight">Esc</span> atau ketuk tombol layar penuh lagi.</p>
+                    <h2><i class="fas fa-info-circle"></i> Tentang Pulau Gag</h2>
+                    <p>Pulau Gag adalah sebuah pulau kecil di Kabupaten Raja Ampat, Papua Barat dengan koordinat:</p>
+                    <p>• <span class="highlight">Latitude</span>: -0.4478</p>
+                    <p>• <span class="highlight">Longitude</span>: 129.8757</p>
+                    <p>Pulau ini dikenal karena keindahan alamnya yang masih alami dan sering diburamkan di peta komersial.</p>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>Website Peta Citra Alternatif &copy; 2023 | Fitur Layar Penuh untuk Eksplorasi Lebih Leluasa</p>
-            <p>Optimized for Mobile Devices</p>
+            <p>Website Peta Citra Alternatif &copy; 2025 | Gndrng.Labs</p>
+            <p>Data untuk semua</p>
         </footer>
     </div>
     
     <div class="fullscreen-overlay" id="fullscreen-overlay">
         <h3><i class="fas fa-expand"></i> Mode Layar Penuh Peta</h3>
-        <p>Anda sedang dalam mode layar penuh khusus untuk peta. Gunakan area penuh untuk eksplorasi citra satelit dengan leluasa.</p>
+        <p>Anda sedang dalam mode layar penuh khusus untuk peta. Gunakan area penuh untuk eksplorasi citra satelit Pulau Gag dengan leluasa.</p>
         <p>Tekan tombol di bawah atau tombol Esc untuk kembali ke tampilan normal.</p>
         <button class="exit-fullscreen-btn" id="exit-fullscreen-btn">
             <i class="fas fa-compress"></i> Keluar dari Layar Penuh
@@ -571,8 +581,9 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Inisialisasi peta dengan fokus pada Indonesia
-        const map = L.map('map').setView([-2.5489, 118.0149], 5);
+        // Inisialisasi peta dengan fokus pada Pulau Gag
+        // Koordinat yang benar: -0.4478, 129.8757
+        const map = L.map('map').setView([-0.4478, 129.8757], 12);
         
         // Layer yang tersedia
         const layerOptions = {
@@ -782,35 +793,23 @@
             }
         }
         
-        // Tambahkan tombol fullscreen ke Leaflet controls
-        L.Control.Fullscreen = L.Control.extend({
-            onAdd: function(map) {
-                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                container.style.background = 'none';
-                container.style.border = 'none';
-                
-                const button = L.DomUtil.create('a', 'leaflet-control-fullscreen', container);
-                button.href = '#';
-                button.title = 'Mode Layar Penuh';
-                button.innerHTML = '<i class="fas fa-expand"></i>';
-                
-                L.DomEvent.on(button, 'click', L.DomEvent.stop)
-                    .on(button, 'click', toggleMapFullscreen);
-                
-                return container;
-            }
+        // Marker khusus untuk Pulau Gag dengan koordinat yang benar
+        const pulauGagIcon = L.divIcon({
+            className: 'gag-marker',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+            popupAnchor: [0, -12]
         });
         
-        L.control.fullscreen = function(opts) {
-            return new L.Control.Fullscreen(opts);
-        };
-        
-        // Tambahkan kontrol ke peta
-        L.control.fullscreen({ position: 'topright' }).addTo(map);
-        
-        // Inisialisasi marker untuk Pulau Gag
-        const pulauGag = L.marker([-0.5417, 130.0142]).addTo(map)
-            .bindPopup('<b>Pulau Gag, Raja Ampat</b><br>Contoh lokasi dengan citra satelit alternatif')
+        // Koordinat yang benar untuk Pulau Gag: -0.4478, 129.8757
+        const pulauGag = L.marker([-0.4478, 129.8757], {icon: pulauGagIcon}).addTo(map)
+            .bindPopup(`
+                <div style="text-align:center">
+                    <h3 style="margin:0;color:#ff3366">Pulau Gag</h3>
+                    <p style="margin:5px 0">Kabupaten Raja Ampat, Papua Barat</p>
+                    <p style="margin:5px 0">Lat: -0.4478, Lon: 129.8757</p>
+                </div>
+            `)
             .openPopup();
     </script>
 </body>
